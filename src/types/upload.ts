@@ -8,7 +8,7 @@ export const SUPPORTED_TYPES = ['image/png', 'image/jpeg']
 export const MIN_DIMENSION = 2000
 export const MAX_DIMENSION = 10000
 
-export function validateImageFile(file: File): UploadValidationResult {
+export async function validateImageFile(file: File): Promise<UploadValidationResult> {
   if (!SUPPORTED_TYPES.includes(file.type)) {
     return { isValid: false, error: 'Unsupported file type. Please upload a PNG or JPEG image.' }
   }
@@ -32,5 +32,5 @@ export function validateImageFile(file: File): UploadValidationResult {
       resolve({ isValid: false, error: 'Failed to read image file. The file may be corrupted.' })
     }
     img.src = URL.createObjectURL(file)
-  }) as unknown as UploadValidationResult
+  })
 }
