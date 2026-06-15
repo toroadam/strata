@@ -11,7 +11,7 @@ const Step4AlignImagery: React.FC = () => {
   const { colors } = useTheme()
   const { selectedCourse } = useCourseStore()
   const { uploadedImage } = useUploadStore()
-  const { overlay, setOverlay, updateOpacity, resetOverlay } = useOverlayStore()
+  const { overlay, setOverlay, updateOpacity, updateCoordinates, resetOverlay } = useOverlayStore()
   const completeStep = useWizardStore((s) => s.completeStep)
   const [cursorCoords, setCursorCoords] = useState<{ lng: number; lat: number } | null>(null)
 
@@ -34,6 +34,25 @@ const Step4AlignImagery: React.FC = () => {
         updatedAt: new Date().toISOString(),
       })
     }
+  }
+
+  const handleNudge = (direction: 'up' | 'down' | 'left' | 'right') => {
+    if (!overlay) return
+    const amount = 0.0001
+    const newCoords = { ...overlay.coordinates }
+    
+    // Apply nudge to all corners to move the entire overlay
+    newCoords.topLeft[1] += direction === 'up' ? amount : direction === 'down' ? -amount : 0
+    newCoords.topRight[1] += direction === 'up' ? amount : direction === 'down' ? -amount : 0
+    newCoords.bottomRight[1] -= direction === 'up' ? amount : direction === 'down' ? -amount : 0
+    newCoords.bottomLeft[1] -= direction === 'up' ? amount : direction === 'down' ? -amount : 0
+
+    newCoords.topLeft[0] += direction === 'left' ? -amount : direction === 'right' ? amount : 0
+    newCoords.topRight[0] += direction === 'left' ? -amount : direction === 'right' ? amount : 0
+    newCoords.bottomRight[0] += direction === 'left' ? -amount : direction === 'right' ? amount : 0
+    newCoords.bottomLeft[0] += direction === 'left' ? -amount : direction === 'right' ? amount : 0
+
+    updateCoordinates(newCoords)
   }
 
   const handleContinue = () => {
@@ -68,6 +87,20 @@ const Step4AlignImagery: React.FC = () => {
               onChange={(e) => updateOpacity(parseFloat(e.target.value))}
               style={{ width: '100%' }}
             />
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <label style={{ fontSize: '0.875rem', color: colors.gray700 }}>Nudge Overlay</label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px', justifyContent: 'center' }}>
+              <button onClick={() => handleNudge('up')} style={{ padding: '6px', cursor: 'pointer' }}>↑</button>
+              <div />
+              <button onClick={() => handleNudge('down')} style={{ padding: '6px', cursor: 'pointer' }}>↓</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px', justifyContent: 'center' }}>
+              <button onClick={() => handleNudge('left')} style={{ padding: '6px', cursor: 'pointer' }}>←</button>
+              <div />
+              <button onClick={() => handleNudge('right')} style={{ padding: '6px', cursor: 'pointer' }}>→</button>
+            </div>
           </div>
 
           <div style={{ marginTop: 'auto', padding: '0.75rem', backgroundColor: colors.white, borderRadius: '6px', border: `1px solid ${colors.gray200}` }}>

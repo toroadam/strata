@@ -71,6 +71,16 @@ const Step5AccuracyCheck: React.FC = () => {
         </select>
       </div>
 
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <label style={{ fontSize: '0.875rem', color: colors.charcoal, fontWeight: 500 }}>Notes (Optional)</label>
+        <textarea 
+          value={overlay.notes || ''}
+          onChange={(e) => setOverlay({ ...overlay, notes: e.target.value })}
+          placeholder="Add any alignment notes or observations..."
+          style={{ padding: '0.75rem', borderRadius: '6px', border: `1px solid ${colors.gray300}`, backgroundColor: colors.white, minHeight: '80px', resize: 'vertical' }}
+        />
+      </div>
+
       <button
         onClick={handleContinue}
         disabled={!isChecklistComplete(checklist)}
