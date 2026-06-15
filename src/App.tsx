@@ -1,59 +1,53 @@
-import React from 'react';
-import { useWizardStore } from '@/store/wizard-store';
-import WizardShell from '@/components/WizardShell';
-import SetupStep from '@/components/wizard/SetupStep';
-import ImportStep from '@/components/wizard/ImportStep';
-import GeoreferenceStep from '@/components/wizard/GeoreferenceStep';
-import ReviewStep from '@/components/wizard/ReviewStep';
-import ProcessStep from '@/components/wizard/ProcessStep';
-import UploadStep from '@/components/wizard/UploadStep';
-import CompleteStep from '@/components/wizard/CompleteStep';
+import React from 'react'
+import { useWizardStore } from './store/wizardStore'
+import { ThemeProvider, useTheme } from './styles/tokens'
+import WizardProgress from './components/WizardProgress'
+import WizardFooter from './components/WizardFooter'
+import * as Steps from './steps'
 
-const STEPS: { id: string; label: string }[] = [
-  { id: 'setup', label: 'Setup' },
-  { id: 'import', label: 'Import' },
-  { id: 'georeference', label: 'Georeference' },
-  { id: 'review', label: 'Review' },
-  { id: 'process', label: 'Process' },
-  { id: 'upload', label: 'Upload' },
-  { id: 'complete', label: 'Complete' },
-];
+const stepComponents = {
+  Step1SelectCourse: Steps.Step1SelectCourse,
+  Step2ConfirmTargetMap: Steps.Step2ConfirmTargetMap,
+  Step3UploadImagery: Steps.Step3UploadImagery,
+  Step4AlignImagery: Steps.Step4AlignImagery,
+  Step5AccuracyCheck: Steps.Step5AccuracyCheck,
+  Step6PreviewFinalMap: Steps.Step6PreviewFinalMap,
+  Step7Publish: Steps.Step7Publish,
+  Step8Success: Steps.Step8Success,
+} as const
 
-const STEP_COMPONENTS: Record<string, React.ComponentType> = {
-  setup: SetupStep,
-  import: ImportStep,
-  georeference: GeoreferenceStep,
-  review: ReviewStep,
-  process: ProcessStep,
-  upload: UploadStep,
-  complete: CompleteStep,
-};
+const AppContent: React.FC = () => {
+  const { currentStep } = useWizardStore()
+  const { colors } = useTheme()
 
-const App: React.FC = () => {
-  const { currentStep } = useWizardStore();
-  const StepComponent = STEP_COMPONENTS[currentStep] || SetupStep;
-  const stepIndex = STEPS.findIndex((s) => s.id === currentStep);
+  const ComponentKey = `Step${currentStep}` as keyof typeof stepComponents
+  const StepComponent = stepComponents[ComponentKey]
+
+  if (!StepComponent) return <div style={{ padding: '2rem', color: colors.error }}>Step not found</div>
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-toro-50 via-white to-toro-100 flex items-center justify-center p-4">
-      {/* Background pattern */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.03]">
-        <svg width="100%" height="100%">
-          <defs>
-            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1B3A5C" strokeWidth="0.5" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#grid)" />
-        </svg>
-      </div>
-
-      <WizardShell currentStep={currentStep} stepIndex={stepIndex}>
-        {/* Step content */}
+    <div style={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      height: '100vh', 
+      backgroundColor: colors.gray50,
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+    }}>
+      <div style={{ flex: 1, padding: '2rem', overflowY: 'auto', maxWidth: '900px', margin: '0 auto', width: '100%' }}>
+        <WizardProgress />
         <StepComponent />
-      </WizardShell>
+      </div>
+      <WizardFooter currentStep={currentStep} totalSteps={8} />
     </div>
-  );
-};
+  )
+}
 
-export default App;
+const App: React.FC = () => {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
+  )
+}
+
+export default App
