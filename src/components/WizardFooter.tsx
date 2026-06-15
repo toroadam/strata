@@ -10,8 +10,8 @@ interface Props {
 const WizardFooter: React.FC<Props> = ({ currentStep, totalSteps }) => {
   const { colors } = useTheme()
   const { prevStep, nextStep } = useWizardStore()
-  const isLastStep = currentStep === totalSteps - 1
-  const isFirstStep = currentStep === 0
+  const isLastStep = currentStep === totalSteps
+  const isFirstStep = currentStep === 1
 
   return (
     <div style={{ padding: '1.5rem 2rem', backgroundColor: colors.gray50, borderTop: `1px solid ${colors.gray200}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

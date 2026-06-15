@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useCourseStore } from '../store/courseStore'
 import { useUploadStore } from '../store/uploadStore'
 import { useOverlayStore } from '../store/overlayStore'
+import { useWizardStore } from '../store/wizardStore'
 import { useTheme } from '../styles/tokens'
 import MapboxCanvas from '../mapbox/MapboxCanvas'
 
@@ -10,6 +11,7 @@ const Step4AlignImagery: React.FC = () => {
   const { selectedCourse } = useCourseStore()
   const { uploadedImage } = useUploadStore()
   const { overlay, setOverlay, updateOpacity, resetOverlay } = useOverlayStore()
+  const completeStep = useWizardStore((s) => s.completeStep)
   const [cursorCoords, setCursorCoords] = useState<{ lng: number; lat: number } | null>(null)
 
   if (!selectedCourse || !uploadedImage) return <div style={{ color: colors.error }}>Please complete previous steps first.</div>
@@ -35,6 +37,7 @@ const Step4AlignImagery: React.FC = () => {
 
   const handleContinue = () => {
     if (overlay) {
+      completeStep('step4')
       useWizardStore.getState().nextStep()
     }
   }
