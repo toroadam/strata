@@ -19,6 +19,7 @@ interface MapboxCanvasProps {
 const MapboxCanvas: React.FC<MapboxCanvasProps> = ({ center, zoom = 14, className = '', onMapLoad, onMouseMove, overlayConfig }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<mapboxgl.Map | null>(null)
+  const sandboxLabelRef = useRef<HTMLDivElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [cursorCoords, setCursorCoords] = useState<{ lng: number; lat: number } | null>(null)
   const { colors } = useTheme()
@@ -56,7 +57,8 @@ const MapboxCanvas: React.FC<MapboxCanvasProps> = ({ center, zoom = 14, classNam
         zIndex: '1000'
       })
       sandboxLabel.textContent = 'Sandbox Mode: Changes are not published yet.'
-      mapContainerRef.current?.appendChild(sandboxLabel)
+      sandboxLabelRef.current = sandboxLabel
+      mapContainerRef.current?.appendChild(sandboxLabelRef.current)
 
       map.on('load', () => {
         onMapLoad?.(map)
@@ -76,7 +78,7 @@ const MapboxCanvas: React.FC<MapboxCanvasProps> = ({ center, zoom = 14, classNam
 
     return () => {
       mapRef.current?.remove()
-      sandboxLabel.remove()
+      sandboxLabelRef.current?.remove()
     }
   }, [center, zoom])
 
