@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import mapboxgl from 'mapbox-gl'
 import { useCourseStore } from '../store/courseStore'
 import { useUploadStore } from '../store/uploadStore'
 import { useOverlayStore } from '../store/overlayStore'
@@ -50,6 +51,7 @@ const Step4AlignImagery: React.FC = () => {
           zoom={14}
           overlayConfig={overlay ? { imageUrl: uploadedImage.previewUrl, coordinates: [overlay.coordinates.topLeft, overlay.coordinates.topRight, overlay.coordinates.bottomRight, overlay.coordinates.bottomLeft], opacity: overlay.opacity } : null}
           onMouseMove={(lngLat) => setCursorCoords(lngLat)}
+          onMapLoad={handleMapLoad}
         />
         
         <div style={{ padding: '1rem', backgroundColor: colors.gray50, borderRadius: '8px', border: `1px solid ${colors.gray200}`, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
