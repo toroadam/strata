@@ -15,7 +15,7 @@ const Step6PreviewFinalMap: React.FC = () => {
   const checklist = useChecklistStore((s) => s.checklist)
   const completeStep = useWizardStore((s) => s.completeStep)
   const [confirmed, setConfirmed] = useState(false)
-  const [viewMode, setViewMode] = useState<'after' | 'before'>('after')
+  const [viewMode, setViewMode] = useState<'before' | 'after'>('after')
 
   if (!selectedCourse || !uploadedImage || !overlay) return <div style={{ color: colors.error }}>Please complete previous steps first.</div>
 
@@ -37,7 +37,7 @@ const Step6PreviewFinalMap: React.FC = () => {
         {['before', 'after'].map((mode) => (
           <button
             key={mode}
-            onClick={() => setViewMode(mode as any)}
+            onClick={() => setViewMode(mode as 'before' | 'after')}
             style={{ padding: '0.5rem 1rem', backgroundColor: viewMode === mode ? colors.toroRed : colors.white, color: viewMode === mode ? colors.white : colors.charcoal, border: `1px solid ${colors.gray300}`, borderRadius: '6px', cursor: 'pointer', fontWeight: 500 }}
           >
             {mode.charAt(0).toUpperCase() + mode.slice(1)}

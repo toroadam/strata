@@ -1,5 +1,5 @@
 import React from 'react'
-import { useWizardStore } from '../store/wizardStore'
+import { useWizardStore, StepId } from '../store/wizardStore'
 import { useTheme } from '../styles/tokens'
 
 const WizardProgress: React.FC = () => {
@@ -15,7 +15,7 @@ const WizardProgress: React.FC = () => {
           style={{
             width: '40px',
             height: '6px',
-            backgroundColor: step === currentStep ? colors.toroRed : completedSteps.has(`step${step}` as 'step1' | 'step2' | 'step3' | 'step4' | 'step5' | 'step6' | 'step7' | 'step8') ? colors.success : colors.gray200,
+            backgroundColor: step === currentStep ? colors.toroRed : completedSteps.has(`step${step}` as StepId) ? colors.success : colors.gray200,
             borderRadius: '3px',
             transition: 'background-color 0.3s ease'
           }}

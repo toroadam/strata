@@ -1,7 +1,7 @@
 import React from 'react'
 import { useCourseStore } from '../store/courseStore'
 import { useUploadStore } from '../store/uploadStore'
-import { useOverlayStore } from '../store/overlayStore'
+import { useOverlayStore, CourseImageOverlay } from '../store/overlayStore'
 import { useChecklistStore, isChecklistComplete } from '../store/checklistStore'
 import { useWizardStore } from '../store/wizardStore'
 import { useTheme } from '../styles/tokens'
@@ -61,7 +61,7 @@ const Step5AccuracyCheck: React.FC = () => {
         <label style={{ fontSize: '0.875rem', color: colors.charcoal, fontWeight: 500 }}>Accuracy Status</label>
         <select 
           value={overlay.accuracyLabel} 
-          onChange={(e) => setOverlay({ ...overlay, accuracyLabel: e.target.value as any })}
+          onChange={(e) => setOverlay({ ...overlay, accuracyLabel: e.target.value as CourseImageOverlay['accuracyLabel'] })}
           style={{ padding: '0.75rem', borderRadius: '6px', border: `1px solid ${colors.gray300}`, backgroundColor: colors.white }}
         >
           <option value="rough_placement">Rough placement</option>

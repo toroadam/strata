@@ -41,16 +41,19 @@ const Step4AlignImagery: React.FC = () => {
     const amount = 0.0001
     const newCoords = { ...overlay.coordinates }
     
-    // Apply nudge to all corners to move the entire overlay
-    newCoords.topLeft[1] += direction === 'up' ? amount : direction === 'down' ? -amount : 0
-    newCoords.topRight[1] += direction === 'up' ? amount : direction === 'down' ? -amount : 0
-    newCoords.bottomRight[1] -= direction === 'up' ? amount : direction === 'down' ? -amount : 0
-    newCoords.bottomLeft[1] -= direction === 'up' ? amount : direction === 'down' ? -amount : 0
+    // Apply uniform nudge to all corners to move the entire overlay correctly
+    const dy = direction === 'up' ? amount : direction === 'down' ? -amount : 0;
+    const dx = direction === 'left' ? -amount : direction === 'right' ? amount : 0;
 
-    newCoords.topLeft[0] += direction === 'left' ? -amount : direction === 'right' ? amount : 0
-    newCoords.topRight[0] += direction === 'left' ? -amount : direction === 'right' ? amount : 0
-    newCoords.bottomRight[0] += direction === 'left' ? -amount : direction === 'right' ? amount : 0
-    newCoords.bottomLeft[0] += direction === 'left' ? -amount : direction === 'right' ? amount : 0
+    newCoords.topLeft[1] += dy;
+    newCoords.topRight[1] += dy;
+    newCoords.bottomRight[1] += dy;
+    newCoords.bottomLeft[1] += dy;
+
+    newCoords.topLeft[0] += dx;
+    newCoords.topRight[0] += dx;
+    newCoords.bottomRight[0] += dx;
+    newCoords.bottomLeft[0] += dx;
 
     updateCoordinates(newCoords)
   }
