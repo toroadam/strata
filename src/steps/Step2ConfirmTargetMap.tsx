@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useCourseStore } from '../store/courseStore'
 import { useWizardStore } from '../store/wizardStore'
 import { useTheme } from '../styles/tokens'
+import MapboxCanvas from '../mapbox/MapboxCanvas'
 
 const Step2ConfirmTargetMap: React.FC = () => {
   const { colors } = useTheme()
@@ -26,9 +27,10 @@ const Step2ConfirmTargetMap: React.FC = () => {
         <p style={{ margin: '0.5rem 0 0 0', color: colors.gray500 }}>Location: {selectedCourse.location.latitude.toFixed(4)}, {selectedCourse.location.longitude.toFixed(4)}</p>
       </div>
       
-      <div style={{ padding: '1rem', backgroundColor: '#eef2f6', borderRadius: '8px', minHeight: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: colors.gray500 }}>
-        [ Mapbox Canvas Placeholder ]
-      </div>
+      <MapboxCanvas 
+        center={[selectedCourse.location.longitude, selectedCourse.location.latitude]} 
+        zoom={13}
+      />
 
       <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
         <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} />
