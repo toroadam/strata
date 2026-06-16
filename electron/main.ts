@@ -13,11 +13,14 @@ function createWindow() {
     },
   })
 
-  if (process.env.VITE_DEV_SERVER_URL) {
-    mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL)
-  } else {
-    mainWindow.loadFile(path.join(__dirname, '../dist/index.html'))
-  }
+  // Robustly handle Vite dev server URL for Electron
+  const devUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173'
+  
+  mainWindow.loadURL(devUrl).catch(err => {
+    console.error('Failed to load Vite dev server:', err)
+    // Fallback to built app if dev server is unreachable
+    mainWindow?.loadFile(path.join(__dirname, '../dist/index.html'))
+  })
 }
 
 app.whenReady().then(createWindow)
