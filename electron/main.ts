@@ -13,8 +13,8 @@ function createWindow() {
     },
   })
 
-  // Robustly handle Vite dev server URL for Electron
-  const devUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173'
+  // Rely on vite-plugin-electron's injected URL, fallback to explicit port
+  const devUrl = process.env.VITE_DEV_SERVER_URL || `http://localhost:${process.env.PORT || 5173}`
   
   mainWindow.loadURL(devUrl).catch(err => {
     console.error('Failed to load Vite dev server:', err)
