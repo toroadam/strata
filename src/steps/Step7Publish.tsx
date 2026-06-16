@@ -6,6 +6,7 @@ import { useChecklistStore } from '../store/checklistStore'
 import { usePublishStore } from '../store/publishStore'
 import { useWizardStore } from '../store/wizardStore'
 import { useTheme } from '../styles/tokens'
+import { localExportAdapter, PublishPayload } from '../services/localExportAdapter'
 
 const Step7Publish: React.FC = () => {
   const { colors } = useTheme()
@@ -24,20 +25,31 @@ const Step7Publish: React.FC = () => {
     if (!confirmed) return
     setIsPublishing(true)
     
-    // Simulate publish delay
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    
-    // Mock success result
-    setResult({
-      id: `pub-${Date.now()}`,
-      status: 'success',
-      publishedAt: new Date().toISOString(),
-      destination: `${selectedCourse.environment} → Mapbox Sandbox`,
-    })
-    
-    setIsPublishing(false)
-    completeStep('step7')
-    useWizardStore.getState().nextStep()
+    try {
+      const payload: PublishPayload = {
+        courseId: selectedCourse.id,
+        courseName: selectedCourse.name,
+        environment: selectedCourse.environment,
+        image: uploadedImage,
+        overlay,
+        checklist,
+      }
+
+      const result = await localExportAdapter(payload)
+      setResult(result)
+      completeStep('step7')
+      useWizardStore.getState().nextStep()
+    } catch (err) {
+      setResult({
+        id: `pub-${Date.now()}`,
+        status: 'failed',
+        publishedAt: new Date().toISOString(),
+        destination: selectedCourse.environment,
+        errorMessage: err instanceof Error ? err.message : 'Unknown error during publish.',
+      })
+    } finally {
+      setIsPublishing(false)
+    }
   }
 
   return (
