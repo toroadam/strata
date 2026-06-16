@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import mapboxgl from 'mapbox-gl'
 import { MAPBOX_TOKEN, MAPBOX_STYLE } from './mapboxConfig'
 import { useTheme } from '../styles/tokens'
+import LoadingState from '../components/LoadingState'
 
 interface MapboxCanvasProps {
   center: [number, number]
@@ -21,16 +22,19 @@ const MapboxCanvas: React.FC<MapboxCanvasProps> = ({ center, zoom = 14, classNam
   const mapRef = useRef<mapboxgl.Map | null>(null)
   const sandboxLabelRef = useRef<HTMLDivElement>(null)
   const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
   const [cursorCoords, setCursorCoords] = useState<{ lng: number; lat: number } | null>(null)
   const { colors } = useTheme()
 
   useEffect(() => {
     if (!MAPBOX_TOKEN) {
       setError('Mapbox token is missing. Please set MAPBOX_TOKEN in your environment variables.')
+      setIsLoading(false)
       return
     }
 
     mapboxgl.accessToken = MAPBOX_TOKEN
+    setIsLoading(true)
 
     try {
       const map = new mapboxgl.Map({
@@ -61,6 +65,7 @@ const MapboxCanvas: React.FC<MapboxCanvasProps> = ({ center, zoom = 14, classNam
       mapContainerRef.current?.appendChild(sandboxLabelRef.current)
 
       map.on('load', () => {
+        setIsLoading(false)
         onMapLoad?.(map)
       })
 
@@ -73,6 +78,7 @@ const MapboxCanvas: React.FC<MapboxCanvasProps> = ({ center, zoom = 14, classNam
       mapRef.current = map
     } catch (err) {
       setError('Failed to load Mapbox. Check your token or internet connection.')
+      setIsLoading(false)
       console.error(err)
     }
 
@@ -83,7 +89,7 @@ const MapboxCanvas: React.FC<MapboxCanvasProps> = ({ center, zoom = 14, classNam
   }, [center, zoom])
 
   useEffect(() => {
-    if (!mapRef.current || !overlayConfig) return
+    if (!mapRef.current || !overlayConfig || isLoading) return
 
     const map = mapRef.current
     const sourceId = 'sandbox-course-image'
@@ -110,7 +116,7 @@ const MapboxCanvas: React.FC<MapboxCanvasProps> = ({ center, zoom = 14, classNam
         'raster-opacity': overlayConfig.opacity
       }
     })
-  }, [overlayConfig])
+  }, [overlayConfig, isLoading])
 
   if (error) {
     return (
@@ -123,7 +129,8 @@ const MapboxCanvas: React.FC<MapboxCanvasProps> = ({ center, zoom = 14, classNam
 
   return (
     <div className={className} ref={mapContainerRef} style={{ width: '100%', height: '400px', borderRadius: '8px', overflow: 'hidden', position: 'relative' }}>
-      {cursorCoords && (
+      {isLoading && <LoadingState message="Initializing map..." />}
+      {cursorCoords && !isLoading && (
         <div style={{ position: 'absolute', bottom: '10px', right: '10px', padding: '4px 8px', backgroundColor: colors.white, border: `1px solid ${colors.gray200}`, borderRadius: '4px', fontSize: '12px', color: colors.charcoal, zIndex: 1000 }}>
           {cursorCoords.lat.toFixed(5)}, {cursorCoords.lng.toFixed(5)}
         </div>
