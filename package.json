@@ -5,8 +5,8 @@
   "description": "Cross-platform wizard for drone imagery georeferencing and Mapbox tileset upload",
   "main": "dist-electron/main.js",
   "scripts": {
-    "dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron --no-sandbox electron/main.ts\"",
-    "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron --no-sandbox electron/main.ts\"",
+    "dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && npx tsx electron/main.ts\"",
+    "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && npx tsx electron/main.ts\"",
     "build": "tsc && vite build && electron-builder",
     "build:vite": "tsc && vite build",
     "preview": "vite preview",
