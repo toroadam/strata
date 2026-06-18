@@ -33,5 +33,9 @@ export const useCourseStore = create<CourseState>((set) => ({
 export const getFilteredCourses = (query: string) => {
   if (!query) return MOCK_COURSES
   const lower = query.toLowerCase()
-  return MOCK_COURSES.filter(c => c.name.toLowerCase().includes(lower) || c.id.toLowerCase().includes(lower))
+  return MOCK_COURSES.filter(c => 
+    c.name.toLowerCase().includes(lower) || 
+    c.id.toLowerCase().includes(lower) || 
+    (c.customerId && c.customerId.toLowerCase().includes(lower))
+  )
 }
