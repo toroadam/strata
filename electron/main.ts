@@ -18,15 +18,16 @@ function createWindow() {
     },
   })
 
-  const isDev = process.env.NODE_ENV === 'development' || !!process.env.VITE_DEV_SERVER_URL
+  // Explicitly detect development mode to prevent falling back to missing dist files
+  const isDev = process.argv.includes('--dev') || process.env.NODE_ENV !== 'production'
   
   if (isDev) {
-    // Explicitly load the Vite dev server in development mode
+    console.log('[Electron] Loading Vite dev server at http://localhost:5173')
     mainWindow.loadURL('http://localhost:5173').catch(err => {
-      console.error('Failed to load Vite dev server:', err)
+      console.error('[Electron] Failed to load Vite dev server:', err)
     })
   } else {
-    // In production, load the built files
+    console.log('[Electron] Loading production build from dist/')
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'))
   }
 }

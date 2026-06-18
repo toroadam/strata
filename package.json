@@ -6,8 +6,8 @@
   "type": "module",
   "main": "dist-electron/main.js",
   "scripts": {
-    "dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && npx tsx electron/main.ts\"",
-    "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && npx tsx electron/main.ts\"",
+    "dev": "NODE_ENV=development concurrently \"vite\" \"wait-on http://localhost:5173 && npx tsx electron/main.ts --dev\"",
+    "electron:dev": "NODE_ENV=development concurrently \"vite\" \"wait-on http://localhost:5173 && npx tsx electron/main.ts --dev\"",
     "build": "tsc && vite build",
     "build:vite": "tsc && vite build",
     "preview": "vite preview",
