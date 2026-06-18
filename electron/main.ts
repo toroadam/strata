@@ -8,19 +8,22 @@ function createWindow() {
     width: 1024,
     height: 768,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
+      nodeIntegration: false,
+      contextIsolation: true,
     },
   })
 
-  // Rely on vite-plugin-electron's injected URL, fallback to explicit port
-  const devUrl = process.env.VITE_DEV_SERVER_URL || `http://localhost:${process.env.PORT || 5173}`
+  const isDev = process.env.NODE_ENV === 'development' || !!process.env.VITE_DEV_SERVER_URL
   
-  mainWindow.loadURL(devUrl).catch(err => {
-    console.error('Failed to load Vite dev server:', err)
-    // Fallback to built app if dev server is unreachable
-    mainWindow?.loadFile(path.join(__dirname, '../dist/index.html'))
-  })
+  if (isDev) {
+    // Explicitly load the Vite dev server in development mode
+    mainWindow.loadURL('http://localhost:5173').catch(err => {
+      console.error('Failed to load Vite dev server:', err)
+    })
+  } else {
+    // In production, load the built files
+    mainWindow.loadFile(path.join(__dirname, '../dist/index.html'))
+  }
 }
 
 app.whenReady().then(createWindow)
