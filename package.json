@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "Cross-platform wizard for drone imagery georeferencing and Mapbox tileset upload",
+  "type": "module",
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && npx tsx electron/main.ts\"",

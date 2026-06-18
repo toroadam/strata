@@ -1,5 +1,5 @@
-import { app, BrowserWindow } from 'electron'
-import path from 'path'
+import electron from 'electron'
+const { app, BrowserWindow } = electron
 
 let mainWindow: BrowserWindow | null = null
 
