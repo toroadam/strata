@@ -9,6 +9,7 @@ import WizardSidebar from './components/WizardSidebar'
 import Dashboard from './layout/Dashboard'
 import CourseWorkspace from './layout/CourseWorkspace'
 import LoadingScreen from './components/LoadingScreen'
+import LoginScreen from './components/LoginScreen'
 import { StepTitle, Button, Icons } from './components/ui'
 import { STEPS } from './steps/stepMeta'
 import logoSvg from './assets/Toro-Logo2.svg'
@@ -74,11 +75,16 @@ const WizardShell: React.FC = () => {
 
 const AppContent: React.FC = () => {
   const [showApp, setShowApp] = useState(false)
+  const [authed, setAuthed] = useState(() => {
+    try { return sessionStorage.getItem('strata-auth') === '1' } catch { return false }
+  })
   const { currentStep, pipelineStarted } = useWizardStore()
   const view = useUIStore((s) => s.view)
   const activeCourseId = useUIStore((s) => s.activeCourseId)
 
   if (!showApp) return <LoadingScreen duration={2100} onComplete={() => setShowApp(true)} />
+
+  if (!authed) return <LoginScreen onSuccess={() => setAuthed(true)} />
 
   const inWizard = currentStep >= 1 || pipelineStarted
   if (inWizard) return <WizardShell />
