@@ -161,6 +161,7 @@ const MapboxCanvas: React.FC<MapboxCanvasProps> = ({ center, zoom = 14, classNam
         isLoadingRef.current = false
         hasLoadedRef.current = true
         currentStyleRef.current = mapStyle ?? MAPBOX_STYLE
+        lastViewRef.current = { lng: center[0], lat: center[1], zoom: zoom ?? 14 }
         setIsInitialized(true)
         onMapLoad?.(map)
         applyOverlayRef.current(true)
@@ -185,12 +186,21 @@ const MapboxCanvas: React.FC<MapboxCanvasProps> = ({ center, zoom = 14, classNam
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps — only init once
 
-  // Fly to new center when props change (without recreating map)
+  // Fly to new center when the requested view actually changes (not on every re-render).
+  // Without the numeric guard, parents that pass a fresh `center={[lng,lat]}` array each
+  // render (e.g. on mousemove) would yank the user's zoom/pan back every frame.
+  const lastViewRef = useRef<{ lng: number; lat: number; zoom: number } | null>(null)
   useEffect(() => {
     if (!mapRef.current || !hasLoadedRef.current) return
 
     const [lng, lat] = center
     const z = zoom ?? 14
+    const last = lastViewRef.current
+    const EPS = 1e-7
+    if (last && Math.abs(last.lng - lng) < EPS && Math.abs(last.lat - lat) < EPS && Math.abs(last.zoom - z) < EPS) {
+      return
+    }
+    lastViewRef.current = { lng, lat, zoom: z }
     mapRef.current.flyTo({ center: [lng, lat], zoom: z, duration: 800 })
   }, [center, zoom]) // eslint-disable-line react-hooks/exhaustive-deps
 

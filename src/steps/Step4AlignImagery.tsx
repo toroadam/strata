@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useCourseStore } from '../store/courseStore'
 import { useUploadStore } from '../store/uploadStore'
 import { useOverlayStore, type LngLat } from '../store/overlayStore'
@@ -76,6 +76,23 @@ const Step4AlignImagery: React.FC = () => {
     if (overlay) completeStep(currentStep)
   }, [overlay, setCurrentStepIsValid, completeStep, currentStep])
 
+  // Stable identities so mousemove-driven re-renders don't reset the map view or re-seed the overlay.
+  const mapCenter = useMemo<[number, number]>(
+    () => [selectedCourse?.location.longitude ?? 0, selectedCourse?.location.latitude ?? 0],
+    [selectedCourse?.location.longitude, selectedCourse?.location.latitude],
+  )
+  const overlayConfig = useMemo(
+    () => (overlay && uploadedImage
+      ? {
+          imageUrl: uploadedImage.previewUrl,
+          coordinates: [overlay.coordinates.topLeft, overlay.coordinates.topRight, overlay.coordinates.bottomRight, overlay.coordinates.bottomLeft] as [number, number][],
+          opacity: overlay.opacity,
+          outline: showOutline,
+        }
+      : null),
+    [overlay, uploadedImage, showOutline],
+  )
+
   if (!selectedCourse || !uploadedImage) return <div style={{ color: colors.error }}>Please complete previous steps first.</div>
 
   const step = 0.00015
@@ -107,7 +124,7 @@ const Step4AlignImagery: React.FC = () => {
     <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 300px', gap: 20, alignItems: 'start' }}>
       <div style={{ borderRadius: 16, overflow: 'hidden', border: `1px solid ${colors.gray200}` }}>
         <MapboxCanvas
-          center={[selectedCourse.location.longitude, selectedCourse.location.latitude]}
+          center={mapCenter}
           zoom={14}
           height={620}
           initialLoad
@@ -115,7 +132,7 @@ const Step4AlignImagery: React.FC = () => {
           mapStyle={basemap.style}
           editableOverlay
           onOverlayChange={handleOverlayChange}
-          overlayConfig={overlay ? { imageUrl: uploadedImage.previewUrl, coordinates: [overlay.coordinates.topLeft, overlay.coordinates.topRight, overlay.coordinates.bottomRight, overlay.coordinates.bottomLeft], opacity: overlay.opacity, outline: showOutline } : null}
+          overlayConfig={overlayConfig}
           onMouseMove={(lngLat) => setCursor(lngLat)}
         />
       </div>
