@@ -20,10 +20,11 @@ export async function validateImageFile(file: File): Promise<UploadValidationRes
   return new Promise((resolve) => {
     const img = new Image()
     img.onload = () => {
-      if (img.width < MIN_DIMENSION || img.height < MIN_DIMENSION) {
-        resolve({ isValid: false, error: `Image dimensions (${img.width}x${img.height}) are too small. Minimum recommended is ${MIN_DIMENSION}px.` })
-      } else if (img.width > MAX_DIMENSION || img.height > MAX_DIMENSION) {
-        resolve({ isValid: false, error: `Image dimensions (${img.width}x${img.height}) exceed maximum allowed (${MAX_DIMENSION}px).` })
+      const longEdge = Math.max(img.width, img.height)
+      if (longEdge < MIN_DIMENSION) {
+        resolve({ isValid: false, error: `Image is too small (${img.width}×${img.height}px). The long edge must be at least ${MIN_DIMENSION}px.` })
+      } else if (longEdge > MAX_DIMENSION) {
+        resolve({ isValid: false, error: `Image is too large (${img.width}×${img.height}px). The long edge must be at most ${MAX_DIMENSION}px.` })
       } else {
         resolve({ isValid: true })
       }

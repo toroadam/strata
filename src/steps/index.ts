@@ -1,0 +1,8 @@
+export { default as Step1SelectCourse } from './Step1SelectCourse'
+export { default as Step2ConfirmTargetMap } from './Step2ConfirmTargetMap'
+export { default as Step3UploadImagery } from './Step3UploadImagery'
+export { default as Step4AlignImagery } from './Step4AlignImagery'
+export { default as Step5AccuracyCheck } from './Step5AccuracyCheck'
+export { default as Step6PreviewFinalMap } from './Step6PreviewFinalMap'
+export { default as Step7Publish } from './Step7Publish'
+export { default as Step8Success } from './Step8Success'

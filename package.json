@@ -15,10 +15,12 @@
     "electron:make": "electron-builder"
   },
   "dependencies": {
+    "@tailwindcss/postcss": "^4.3.1",
+    "immer": "^11.1.8",
+    "mapbox-gl": "^3.20.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "zustand": "^5.0.8",
-    "mapbox-gl": "^3.20.0"
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@types/mapbox-gl": "^3.4.1",
@@ -54,7 +56,9 @@
       {
         "from": "gdal-bin",
         "to": "gdal-bin",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       }
     ]
   }

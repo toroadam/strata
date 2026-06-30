@@ -1,46 +1,89 @@
 import React from 'react'
 import { useWizardStore } from '../store/wizardStore'
-import { useTheme } from '../styles/tokens'
+import { useUIStore } from '../store/uiStore'
+import { colors } from '../styles/tokens'
+import { Button, Icons } from './ui'
 
 interface Props {
-  currentStep: number;
-  totalSteps: number;
+  currentStep: number
+  totalSteps: number
+  isValid?: boolean
+  onFinish?: () => void
 }
 
-const WizardFooter: React.FC<Props> = ({ currentStep, totalSteps }) => {
-  const { colors } = useTheme()
-  const { prevStep, nextStep } = useWizardStore()
+const hintByStep: Record<number, string> = {
+  1: 'Select a course to continue',
+  2: 'Confirm the target to continue',
+  3: 'Upload an image to continue',
+  4: 'Place your imagery on the map',
+  5: 'Check every item to continue',
+  6: 'Confirm the preview to continue',
+  7: 'Confirm, then publish',
+}
+
+const ctaByStep: Record<number, string> = {
+  1: 'Continue', 2: 'Continue', 3: 'Continue', 4: 'Continue',
+  5: 'Continue', 6: 'Continue to publish', 7: 'Continue',
+}
+
+const WizardFooter: React.FC<Props> = ({ currentStep, totalSteps, isValid = true, onFinish }) => {
+  const { nextStep, prevStep } = useWizardStore()
+  const view = useUIStore((s) => s.view)
   const isLastStep = currentStep === totalSteps
   const isFirstStep = currentStep === 1
+  const isPublishStep = currentStep === 7
+  const isNextDisabled = !isValid && !isLastStep
+
+  if (isLastStep) {
+    return (
+      <div style={footerStyle}>
+        <div style={{ flex: 1 }} />
+        <Button variant="primary" size="lg" onClick={onFinish} iconRight={<Icons.ArrowRight size={18} />}>
+          {view === 'course' ? 'Go to course workspace' : 'Back to dashboard'}
+        </Button>
+      </div>
+    )
+  }
 
   return (
-    <div style={{ padding: '1.5rem 2rem', backgroundColor: colors.gray50, borderTop: `1px solid ${colors.gray200}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <button
-        onClick={prevStep}
-        disabled={isFirstStep}
-        style={{ padding: '0.75rem 1.5rem', backgroundColor: isFirstStep ? colors.gray300 : colors.white, border: `1px solid ${colors.gray300}`, borderRadius: '6px', cursor: isFirstStep ? 'not-allowed' : 'pointer', fontWeight: 500 }}
-      >
-        Back
-      </button>
-      <div style={{ display: 'flex', gap: '1rem' }}>
-        {isLastStep ? (
-          <button
-            onClick={() => alert('Workflow complete. Application ready for next session.')}
-            style={{ padding: '0.75rem 1.5rem', backgroundColor: colors.toroRed, color: colors.white, border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
+    <div style={footerStyle}>
+      <div style={{ flex: 1, display: 'flex' }}>
+        {!isFirstStep && (
+          <Button variant="secondary" onClick={prevStep} iconLeft={<Icons.ArrowLeft size={18} />}>
+            Back
+          </Button>
+        )}
+      </div>
+
+      <div style={{ fontSize: 13, color: colors.gray500, fontWeight: 500 }}>
+        {isNextDisabled ? hintByStep[currentStep] : `Step ${currentStep} of ${totalSteps}`}
+      </div>
+
+      <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+        {!isPublishStep && (
+          <Button
+            variant="primary"
+            size="lg"
+            disabled={isNextDisabled}
+            onClick={() => nextStep()}
+            iconRight={<Icons.ArrowRight size={18} />}
           >
-            Finish
-          </button>
-        ) : (
-          <button
-            onClick={nextStep}
-            style={{ padding: '0.75rem 1.5rem', backgroundColor: colors.toroRed, color: colors.white, border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
-          >
-            Next Step
-          </button>
+            {ctaByStep[currentStep] || 'Continue'}
+          </Button>
         )}
       </div>
     </div>
   )
+}
+
+const footerStyle: React.CSSProperties = {
+  padding: '16px 32px',
+  background: colors.white,
+  borderTop: `1px solid ${colors.gray200}`,
+  display: 'flex',
+  alignItems: 'center',
+  gap: 20,
+  flexShrink: 0,
 }
 
 export default WizardFooter

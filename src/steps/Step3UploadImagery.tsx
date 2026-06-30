@@ -1,26 +1,32 @@
-import React, { useState, useCallback, useRef } from 'react'
+import React, { useState, useCallback, useRef, useEffect } from 'react'
 import { useUploadStore } from '../store/uploadStore'
 import { useWizardStore } from '../store/wizardStore'
-import { useTheme } from '../styles/tokens'
+import { colors } from '../styles/tokens'
 import { validateImageFile, SUPPORTED_TYPES } from '../types/upload'
+import { Icons, Button } from '../components/ui'
 
 const Step3UploadImagery: React.FC = () => {
-  const { colors } = useTheme()
   const { uploadedImage, setUploadedImage, clearUploadedImage } = useUploadStore()
   const completeStep = useWizardStore((s) => s.completeStep)
+  const currentStep = useWizardStore((s) => s.currentStep)
+  const setCurrentStepIsValid = useWizardStore((s) => s.setCurrentStepIsValid)
   const [isDragging, setIsDragging] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  useEffect(() => {
+    const isValid = !!uploadedImage
+    setCurrentStepIsValid(isValid)
+    if (isValid) completeStep(currentStep)
+  }, [uploadedImage, setCurrentStepIsValid, completeStep, currentStep])
+
   const processFile = async (file: File) => {
     setError(null)
     const validation = await validateImageFile(file)
-    
     if (!validation.isValid) {
       setError(validation.error || 'Invalid image file.')
       return
     }
-
     const reader = new FileReader()
     reader.onload = (e) => {
       const img = new Image()
@@ -40,114 +46,87 @@ const Step3UploadImagery: React.FC = () => {
     reader.readAsDataURL(file)
   }
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(true)
+  const onDragOver = useCallback((e: React.DragEvent) => { e.preventDefault(); setIsDragging(true) }, [])
+  const onDragLeave = useCallback((e: React.DragEvent) => { e.preventDefault(); setIsDragging(false) }, [])
+  const onDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault(); setIsDragging(false)
+    const file = e.dataTransfer.files[0]; if (file) processFile(file)
   }, [])
-
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(false)
+  const onSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]; if (file) processFile(file)
   }, [])
-
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(false)
-    const file = e.dataTransfer.files[0]
-    if (file) processFile(file)
-  }, [])
-
-  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) processFile(file)
-  }, [])
-
   const handleReplace = () => {
-    clearUploadedImage()
-    setError(null)
+    clearUploadedImage(); setError(null)
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
-  const handleContinue = () => {
-    if (uploadedImage) {
-      completeStep('step3')
-      useWizardStore.getState().nextStep()
-    }
-  }
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
       {!uploadedImage ? (
         <div
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
+          onDragOver={onDragOver}
+          onDragLeave={onDragLeave}
+          onDrop={onDrop}
           onClick={() => fileInputRef.current?.click()}
           style={{
-            padding: '3rem 2rem',
+            padding: '56px 32px',
             border: `2px dashed ${isDragging ? colors.toroRed : colors.gray300}`,
-            borderRadius: '8px',
-            backgroundColor: isDragging ? `${colors.toroRed}10` : colors.white,
-            cursor: 'pointer',
-            textAlign: 'center',
-            transition: 'all 0.2s ease'
+            borderRadius: 18,
+            background: isDragging ? colors.toroRedTint : colors.white,
+            cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s ease',
           }}
         >
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept={SUPPORTED_TYPES.join(',')}
-            onChange={handleFileSelect}
-            style={{ display: 'none' }}
-          />
-          <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>📁</div>
-          <h3 style={{ margin: '0 0 0.5rem 0', color: colors.charcoal }}>Upload the new course image</h3>
-          <p style={{ margin: 0, color: colors.gray500, fontSize: '0.875rem' }}>
-            Drag & drop your PNG or JPEG here, or click to browse.<br/>
-            Max size: 50 MB • Min dimensions: 2000px
+          <input ref={fileInputRef} type="file" accept={SUPPORTED_TYPES.join(',')} onChange={onSelect} style={{ display: 'none' }} />
+          <div style={{ width: 64, height: 64, borderRadius: 999, margin: '0 auto 18px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: colors.toroRedTint, color: colors.toroRed }}>
+            <Icons.Upload size={28} strokeWidth={2} />
+          </div>
+          <h3 style={{ fontSize: 18, color: colors.ink, marginBottom: 6 }}>Drag & drop your drone image</h3>
+          <p style={{ margin: 0, color: colors.gray500, fontSize: 14 }}>
+            or <span style={{ color: colors.toroRed, fontWeight: 600 }}>browse to upload</span>
           </p>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 18, flexWrap: 'wrap' }}>
+            {['PNG or JPEG', 'Up to 50 MB', 'Min 2000px'].map((t) => (
+              <span key={t} className="badge" style={{ background: colors.gray100, color: colors.gray700 }}>{t}</span>
+            ))}
+          </div>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', border: `1px solid ${colors.gray200}` }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ position: 'relative', borderRadius: 16, overflow: 'hidden', border: `1px solid ${colors.gray200}`, maxHeight: 420 }}>
             <img src={uploadedImage.previewUrl} alt="Uploaded course imagery" style={{ width: '100%', height: 'auto', display: 'block' }} />
-            <div style={{ position: 'absolute', top: '8px', right: '8px', padding: '4px 8px', backgroundColor: colors.charcoal, color: colors.white, borderRadius: '4px', fontSize: '12px', fontWeight: 600 }}>
-              Preview
-            </div>
-          </div>
-          
-          <div style={{ padding: '1rem', backgroundColor: colors.gray50, borderRadius: '8px', border: `1px solid ${colors.gray200}` }}>
-            <h4 style={{ margin: '0 0 0.5rem 0', color: colors.charcoal }}>File Details</h4>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', fontSize: '0.875rem', color: colors.gray700 }}>
-              <div><strong>Name:</strong> {uploadedImage.originalFileName}</div>
-              <div><strong>Type:</strong> {uploadedImage.mimeType.split('/')[1].toUpperCase()}</div>
-              <div><strong>Dimensions:</strong> {uploadedImage.width} × {uploadedImage.height}px</div>
-              <div><strong>Size:</strong> {(uploadedImage.sizeBytes / 1024 / 1024).toFixed(2)} MB</div>
+            <div className="badge" style={{ position: 'absolute', top: 12, right: 12, background: 'rgba(0,0,0,0.7)', color: '#fff', backdropFilter: 'blur(4px)' }}>
+              <Icons.Image size={13} /> Preview
             </div>
           </div>
 
-          <button
-            onClick={handleReplace}
-            style={{ padding: '0.5rem 1rem', backgroundColor: colors.white, border: `1px solid ${colors.gray300}`, borderRadius: '6px', cursor: 'pointer', color: colors.charcoal, fontWeight: 500 }}
-          >
-            Replace Image
-          </button>
+          <div className="card" style={{ padding: 18 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: colors.ink, marginBottom: 12 }}>File details</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+              {[
+                ['Name', uploadedImage.originalFileName],
+                ['Format', uploadedImage.mimeType.split('/')[1].toUpperCase()],
+                ['Dimensions', `${uploadedImage.width} × ${uploadedImage.height}`],
+                ['Size', `${(uploadedImage.sizeBytes / 1024 / 1024).toFixed(2)} MB`],
+              ].map(([k, v]) => (
+                <div key={k} style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em', color: colors.gray400, marginBottom: 4 }}>{k}</div>
+                  <div style={{ fontSize: 14, color: colors.ink, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{v}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <Button variant="secondary" size="sm" onClick={handleReplace} iconLeft={<Icons.Upload size={16} />}>Replace image</Button>
+          </div>
         </div>
       )}
 
       {error && (
-        <div style={{ padding: '1rem', backgroundColor: `${colors.error}15`, border: `1px solid ${colors.error}`, borderRadius: '6px', color: colors.error, fontSize: '0.875rem' }}>
-          ⚠️ {error}
+        <div style={{ padding: '14px 16px', background: colors.errorTint, border: `1px solid ${colors.error}40`, borderRadius: 12, color: colors.error, fontSize: 14, display: 'flex', gap: 10, alignItems: 'center' }}>
+          <Icons.X size={18} /> {error}
         </div>
       )}
-
-      <button
-        onClick={handleContinue}
-        disabled={!uploadedImage}
-        style={{ padding: '0.75rem 1.5rem', backgroundColor: uploadedImage ? colors.toroRed : colors.gray300, color: uploadedImage ? colors.white : colors.gray700, border: 'none', borderRadius: '6px', cursor: uploadedImage ? 'pointer' : 'not-allowed', fontWeight: 600 }}
-      >
-        Continue to Alignment
-      </button>
     </div>
   )
 }

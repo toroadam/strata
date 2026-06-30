@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
+import './styles/globals.css'
 
 // Catch silent React rendering errors and log them to the console
 const Root = () => {

@@ -1,0 +1,16 @@
+# Dependencies
+node_modules
+
+# Build output
+dist
+dist-electron
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Editor / OS
+.aider*
+.DS_Store
+**/.DS_Store
