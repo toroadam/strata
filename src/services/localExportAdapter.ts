@@ -10,6 +10,8 @@ export interface PublishPayload {
   image: UploadedImage
   overlay: CourseImageOverlay
   checklist: AccuracyChecklist
+  destinationName?: string
+  destinationStyleId?: string
 }
 
 export async function localExportAdapter(payload: PublishPayload): Promise<PublishResult> {
@@ -22,10 +24,11 @@ export async function localExportAdapter(payload: PublishPayload): Promise<Publi
   
   await new Promise(resolve => setTimeout(resolve, 800))
 
+  const target = payload.destinationName || 'Local Export'
   return {
     id: `pub-${Date.now()}`,
     status: 'success',
     publishedAt: new Date().toISOString(),
-    destination: `${payload.environment} → Local Export`,
+    destination: `${payload.environment} → ${target}`,
   }
 }

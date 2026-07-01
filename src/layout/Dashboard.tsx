@@ -168,15 +168,6 @@ const Dashboard: React.FC<DashboardProps> = () => {
             <span style={{ width: 1, height: 18, background: colors.gray200 }} />
             <span style={{ fontSize: 14, color: colors.gray500, fontWeight: 500 }}>Course Imagery Publisher</span>
           </div>
-          <nav style={{ display: 'flex', gap: 4 }}>
-            {['Dashboard', 'Courses', 'Pipelines'].map((item, i) => (
-              <button key={item} style={{
-                fontSize: 14, padding: '8px 14px', borderRadius: 999, border: 'none', cursor: 'pointer',
-                background: i === 0 ? colors.gray100 : 'transparent',
-                color: i === 0 ? colors.ink : colors.gray500, fontWeight: i === 0 ? 600 : 500,
-              }}>{item}</button>
-            ))}
-          </nav>
           <div style={{ width: 36, height: 36, borderRadius: 999, background: colors.ink, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700 }}>TC</div>
         </div>
       </header>

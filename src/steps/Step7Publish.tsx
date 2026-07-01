@@ -4,6 +4,7 @@ import { useUploadStore } from '../store/uploadStore'
 import { useOverlayStore } from '../store/overlayStore'
 import { useChecklistStore } from '../store/checklistStore'
 import { usePublishStore } from '../store/publishStore'
+import { useDestinationStore } from '../store/destinationStore'
 import { useWizardStore } from '../store/wizardStore'
 import { useUIStore } from '../store/uiStore'
 import { colors } from '../styles/tokens'
@@ -15,6 +16,7 @@ const Step7Publish: React.FC = () => {
   const { uploadedImage } = useUploadStore()
   const { overlay } = useOverlayStore()
   const checklist = useChecklistStore((s) => s.checklist)
+  const destination = useDestinationStore((s) => s.destination)
   const setResult = usePublishStore((s) => s.setResult)
   const completeStep = useWizardStore((s) => s.completeStep)
   const currentStep = useWizardStore((s) => s.currentStep)
@@ -39,6 +41,8 @@ const Step7Publish: React.FC = () => {
         image: uploadedImage,
         overlay,
         checklist,
+        destinationName: destination?.styleName,
+        destinationStyleId: destination?.styleId,
       }
       const result = await localExportAdapter(payload)
       setResult(result)
@@ -80,6 +84,9 @@ const Step7Publish: React.FC = () => {
     ['Course', selectedCourse.name],
     ['Course ID', <span style={{ fontFamily: 'var(--font-mono)' }}>{selectedCourse.id}</span>],
     ['Environment', <EnvBadge env={selectedCourse.environment} />],
+    ['Destination map', destination
+      ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}><Icons.Layers size={15} />{destination.styleName}</span>
+      : <span style={{ color: colors.gray500 }}>Not selected</span>],
     ['Image', uploadedImage.originalFileName],
     ['Dimensions', `${uploadedImage.width} × ${uploadedImage.height}px`],
     ['Accuracy', <span style={{ textTransform: 'capitalize' }}>{overlay.accuracyLabel.replace(/_/g, ' ')}</span>],

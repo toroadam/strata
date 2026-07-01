@@ -41,7 +41,7 @@ export const useWizardStore = create<WizardState>()(
 
       nextStep: () => {
         const state = get()
-        if (state.currentStep < 8) set({ currentStep: state.currentStep + 1, currentStepIsValid: false })
+        if (state.currentStep < 9) set({ currentStep: state.currentStep + 1, currentStepIsValid: false })
       },
 
       prevStep: () => {

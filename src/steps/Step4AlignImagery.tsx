@@ -3,6 +3,7 @@ import { useCourseStore } from '../store/courseStore'
 import { useUploadStore } from '../store/uploadStore'
 import { useOverlayStore, type LngLat } from '../store/overlayStore'
 import { useWizardStore } from '../store/wizardStore'
+import { useDestinationStore } from '../store/destinationStore'
 import { colors } from '../styles/tokens'
 import { Icons, Button } from '../components/ui'
 import MapboxCanvas from '../mapbox/MapboxCanvas'
@@ -52,8 +53,16 @@ const Step4AlignImagery: React.FC = () => {
   const currentStep = useWizardStore((s) => s.currentStep)
   const completeStep = useWizardStore((s) => s.completeStep)
   const setCurrentStepIsValid = useWizardStore((s) => s.setCurrentStepIsValid)
+  const destination = useDestinationStore((s) => s.destination)
   const [cursor, setCursor] = useState<{ lng: number; lat: number } | null>(null)
-  const [basemap, setBasemap] = useState(BASEMAPS[0])
+  // The chosen destination map is the primary basemap so alignment happens on the real target.
+  const basemaps = useMemo(() => {
+    if (destination && !BASEMAPS.some((b) => b.style === destination.styleUrl)) {
+      return [{ id: 'target', label: 'Target map', style: destination.styleUrl }, ...BASEMAPS]
+    }
+    return BASEMAPS
+  }, [destination])
+  const [basemap, setBasemap] = useState(basemaps[0])
   const [showOutline, setShowOutline] = useState(true)
 
   // Seed an initial overlay so the user always has something to align.
@@ -151,7 +160,7 @@ const Step4AlignImagery: React.FC = () => {
         <div>
           <div style={{ fontSize: 13, fontWeight: 600, color: colors.ink, marginBottom: 8 }}>Base map</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {BASEMAPS.map((b) => {
+            {basemaps.map((b) => {
               const active = basemap.id === b.id
               return (
                 <button

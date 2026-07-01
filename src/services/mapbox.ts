@@ -3,6 +3,7 @@ const API_BASE = 'https://api.mapbox.com';
 export interface MapboxStyle {
   id: string;
   name: string;
+  owner?: string;
   url?: string;
   thumbnail_url?: string;
 }
@@ -24,7 +25,8 @@ export async function fetchMapStyles(token: string): Promise<MapboxStyle[]> {
     styles.push(...items.map((f: any) => ({
       id: f.id,
       name: f.name,
-      url: f.url,
+      owner: f.owner,
+      url: f.url || (f.owner && f.id ? `mapbox://styles/${f.owner}/${f.id}` : undefined),
       thumbnail_url: f.thumbnail_url,
     })));
 

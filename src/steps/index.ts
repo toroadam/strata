@@ -1,4 +1,5 @@
 export { default as Step1SelectCourse } from './Step1SelectCourse'
+export { default as Step2ChooseDestination } from './Step2ChooseDestination'
 export { default as Step2ConfirmTargetMap } from './Step2ConfirmTargetMap'
 export { default as Step3UploadImagery } from './Step3UploadImagery'
 export { default as Step4AlignImagery } from './Step4AlignImagery'

@@ -17,6 +17,7 @@ import * as Steps from './steps'
 
 const stepComponents = [
   Steps.Step1SelectCourse,
+  Steps.Step2ChooseDestination,
   Steps.Step2ConfirmTargetMap,
   Steps.Step3UploadImagery,
   Steps.Step4AlignImagery,
@@ -30,7 +31,7 @@ const WizardShell: React.FC = () => {
   const { currentStep, currentStepIsValid, completedSteps, resetWizard, setCurrentStep } = useWizardStore()
   const StepComponent = stepComponents[currentStep - 1]
   const meta = STEPS[currentStep - 1]
-  const isSuccess = currentStep === 8
+  const isSuccess = currentStep === 9
 
   const handleBackToHome = () => {
     resetWizard()
@@ -61,14 +62,14 @@ const WizardShell: React.FC = () => {
         <WizardSidebar currentStep={currentStep} completedSteps={completedSteps} onJump={(n) => setCurrentStep(n)} />
 
         <main style={{ flex: 1, overflowY: 'auto', minWidth: 0 }}>
-          <div key={currentStep} className="animate-fade-up" style={{ maxWidth: isSuccess ? 720 : (currentStep === 4 ? 1180 : 880), margin: '0 auto', padding: '40px 40px 48px', width: '100%' }}>
+          <div key={currentStep} className="animate-fade-up" style={{ maxWidth: isSuccess ? 720 : (currentStep === 5 ? 1180 : 880), margin: '0 auto', padding: '40px 40px 48px', width: '100%' }}>
             {!isSuccess && <div style={{ marginBottom: 28 }}><StepTitle eyebrow={meta.eyebrow} title={meta.title} subtitle={meta.subtitle} /></div>}
             <StepComponent />
           </div>
         </main>
       </div>
 
-      <WizardFooter currentStep={currentStep} totalSteps={8} isValid={currentStepIsValid} onFinish={handleBackToHome} />
+      <WizardFooter currentStep={currentStep} totalSteps={9} isValid={currentStepIsValid} onFinish={handleBackToHome} />
     </div>
   )
 }

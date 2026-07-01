@@ -13,17 +13,18 @@ interface Props {
 
 const hintByStep: Record<number, string> = {
   1: 'Select a course to continue',
-  2: 'Confirm the target to continue',
-  3: 'Upload an image to continue',
-  4: 'Place your imagery on the map',
-  5: 'Check every item to continue',
-  6: 'Confirm the preview to continue',
-  7: 'Confirm, then publish',
+  2: 'Choose a destination map to continue',
+  3: 'Confirm the target to continue',
+  4: 'Upload an image to continue',
+  5: 'Place your imagery on the map',
+  6: 'Check every item to continue',
+  7: 'Confirm the preview to continue',
+  8: 'Confirm, then publish',
 }
 
 const ctaByStep: Record<number, string> = {
   1: 'Continue', 2: 'Continue', 3: 'Continue', 4: 'Continue',
-  5: 'Continue', 6: 'Continue to publish', 7: 'Continue',
+  5: 'Continue', 6: 'Continue', 7: 'Continue to publish', 8: 'Continue',
 }
 
 const WizardFooter: React.FC<Props> = ({ currentStep, totalSteps, isValid = true, onFinish }) => {
@@ -31,7 +32,7 @@ const WizardFooter: React.FC<Props> = ({ currentStep, totalSteps, isValid = true
   const view = useUIStore((s) => s.view)
   const isLastStep = currentStep === totalSteps
   const isFirstStep = currentStep === 1
-  const isPublishStep = currentStep === 7
+  const isPublishStep = currentStep === 8
   const isNextDisabled = !isValid && !isLastStep
 
   if (isLastStep) {
