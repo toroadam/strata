@@ -6,7 +6,7 @@ import { useCourseStore } from '../store/courseStore'
 import { colors } from '../styles/tokens'
 import { validateImageFile, SUPPORTED_TYPES } from '../types/upload'
 import { Icons, Button } from '../components/ui'
-import MapboxCanvas from '../mapbox/MapboxCanvas'
+import DualSourceCompare from '../mapbox/DualSourceCompare'
 import { AERIAL_SOURCES, captureAerial, getAerialSource, sizeForBBox, type AerialSourceId, type BBox } from '../services/imagerySources'
 
 type Method = 'capture' | 'upload'
@@ -253,18 +253,18 @@ const Step3UploadImagery: React.FC = () => {
       ) : (
         /* Capture panel */
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 280px', gap: 18, alignItems: 'start' }}>
-          <div style={{ borderRadius: 16, overflow: 'hidden', border: `1px solid ${colors.gray200}`, position: 'relative' }}>
-            <MapboxCanvas
+          <div style={{ position: 'relative' }}>
+            <DualSourceCompare
               center={mapCenter}
               zoom={15}
               height={460}
-              initialLoad
-              mapStyle="mapbox://styles/mapbox/satellite-streets-v12"
+              sourceId={sourceId}
               onMapLoad={onCaptureMapLoad}
+              onBoundsChange={setViewBounds}
             />
-            <div style={{ position: 'absolute', bottom: 12, left: 12, right: 12, display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}>
-              <div style={{ padding: '7px 14px', background: 'rgba(31,35,40,0.82)', color: '#fff', borderRadius: 999, fontSize: 12.5, fontWeight: 600, backdropFilter: 'blur(4px)' }}>
-                Frame the course, then capture — the visible area is what gets pulled.
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 10 }}>
+              <div style={{ padding: '7px 14px', background: colors.gray50, color: colors.gray700, borderRadius: 999, fontSize: 12.5, fontWeight: 600 }}>
+                Drag either map — they stay in sync. Capture pulls the framed area from the source.
               </div>
             </div>
           </div>

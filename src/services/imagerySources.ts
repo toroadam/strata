@@ -120,6 +120,14 @@ const buildUrl = (source: AerialSource, bbox: BBox, width: number, height: numbe
   return `${source.endpoint}?${params.toString()}`
 }
 
+/**
+ * A Mapbox raster tile-URL template for showing a source as a live slippy basemap.
+ * Uses the `{bbox-epsg-3857}` token Mapbox fills per tile — so it must be built as a raw
+ * string (URLSearchParams would percent-encode the braces).
+ */
+export const tileTemplate = (source: AerialSource): string =>
+  `${source.endpoint}?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=256,256&format=png&transparent=false&f=image`
+
 export interface CaptureResult {
   dataUrl: string
   width: number
