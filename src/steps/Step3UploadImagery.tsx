@@ -252,12 +252,12 @@ const Step3UploadImagery: React.FC = () => {
         </div>
       ) : (
         /* Capture panel */
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 280px', gap: 18, alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 270px', gap: 18, alignItems: 'start' }}>
           <div style={{ position: 'relative' }}>
             <DualSourceCompare
               center={mapCenter}
               zoom={15}
-              height={460}
+              height={560}
               sourceId={sourceId}
               onMapLoad={onCaptureMapLoad}
               onBoundsChange={setViewBounds}

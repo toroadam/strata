@@ -26,7 +26,7 @@ const emptyStyle: mapboxgl.StyleSpecification = { version: 8, sources: {}, layer
  * selected public-domain source as a live basemap. Panning/zooming either map moves both,
  * so the user can judge the source against what they have before capturing.
  */
-const DualSourceCompare: React.FC<Props> = ({ center, zoom = 15, height = 460, sourceId, onMapLoad, onBoundsChange }) => {
+const DualSourceCompare: React.FC<Props> = ({ center, zoom = 15, height = 520, sourceId, onMapLoad, onBoundsChange }) => {
   const leftRef = useRef<HTMLDivElement>(null)
   const rightRef = useRef<HTMLDivElement>(null)
   const leftMapRef = useRef<mapboxgl.Map | null>(null)
@@ -113,12 +113,12 @@ const DualSourceCompare: React.FC<Props> = ({ center, zoom = 15, height = 460, s
   )
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-      <div style={{ position: 'relative', borderRadius: 14, overflow: 'hidden', border: `1px solid ${colors.gray200}` }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+      <div style={{ position: 'relative', borderRadius: 16, overflow: 'hidden', border: `1px solid ${colors.gray200}` }}>
         <Label text="Current · Mapbox satellite" />
         <div ref={leftRef} style={{ width: '100%', height }} />
       </div>
-      <div style={{ position: 'relative', borderRadius: 14, overflow: 'hidden', border: `1px solid ${colors.gray200}` }}>
+      <div style={{ position: 'relative', borderRadius: 16, overflow: 'hidden', border: `1px solid ${colors.gray200}` }}>
         <Label text={`Source · ${getAerialSource(sourceId).label}`} />
         <div ref={rightRef} style={{ width: '100%', height }} />
       </div>

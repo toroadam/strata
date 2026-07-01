@@ -62,7 +62,16 @@ const WizardShell: React.FC = () => {
         <WizardSidebar currentStep={currentStep} completedSteps={completedSteps} onJump={(n) => setCurrentStep(n)} />
 
         <main style={{ flex: 1, overflowY: 'auto', minWidth: 0 }}>
-          <div key={currentStep} className="animate-fade-up" style={{ maxWidth: isSuccess ? 720 : (currentStep === 5 ? 1180 : 880), margin: '0 auto', padding: '40px 40px 48px', width: '100%' }}>
+          <div
+            key={currentStep}
+            className="animate-fade-up"
+            style={{
+              maxWidth: isSuccess ? 720 : (currentStep === 4 ? 1320 : (currentStep === 5 ? 1180 : 880)),
+              margin: '0 auto',
+              padding: '40px 40px 48px',
+              width: '100%',
+            }}
+          >
             {!isSuccess && <div style={{ marginBottom: 28 }}><StepTitle eyebrow={meta.eyebrow} title={meta.title} subtitle={meta.subtitle} /></div>}
             <StepComponent />
           </div>
