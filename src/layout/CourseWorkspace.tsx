@@ -87,7 +87,10 @@ const CourseWorkspace: React.FC<Props> = ({ courseId }) => {
   const handleAddImagery = () => {
     selectCourse(course)
     setReturnToCourse(course.id)
-    useWizardStore.getState().setCurrentStep(1)
+    // Course is already chosen from this page — mark Step 1 done and skip straight to it.
+    const wiz = useWizardStore.getState()
+    wiz.completeStep(1)
+    wiz.setCurrentStep(2)
   }
 
   const handlePublish = () => {

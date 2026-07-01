@@ -65,15 +65,19 @@ const Step4AlignImagery: React.FC = () => {
   const [basemap, setBasemap] = useState(basemaps[0])
   const [showOutline, setShowOutline] = useState(true)
 
-  // Seed an initial overlay so the user always has something to align.
+  const isAutoAligned = !!uploadedImage?.capturedCorners
+
+  // Seed an initial overlay so the user always has something to align. Captured imagery is
+  // georeferenced, so it seeds onto its exact corners already aligned; uploads get a rough box.
   useEffect(() => {
     if (!overlay && selectedCourse && uploadedImage) {
       const aspect = uploadedImage.width / uploadedImage.height
       setOverlay({
         id: `ov-${Date.now()}`,
         opacity: 0.7,
-        coordinates: seedCoordinates(selectedCourse.location.longitude, selectedCourse.location.latitude, aspect),
-        accuracyLabel: 'rough_placement',
+        coordinates: uploadedImage.capturedCorners
+          ?? seedCoordinates(selectedCourse.location.longitude, selectedCourse.location.latitude, aspect),
+        accuracyLabel: uploadedImage.capturedCorners ? 'visually_aligned' : 'rough_placement',
         notes: '',
         updatedAt: new Date().toISOString(),
       })
@@ -109,7 +113,10 @@ const Step4AlignImagery: React.FC = () => {
   const resize = (factor: number) => { if (overlay) updateCoordinates(scale(overlay.coordinates, factor)) }
   const reseed = () => {
     const aspect = uploadedImage.width / uploadedImage.height
-    if (overlay) updateCoordinates(seedCoordinates(selectedCourse.location.longitude, selectedCourse.location.latitude, aspect))
+    if (overlay) updateCoordinates(
+      uploadedImage.capturedCorners
+        ?? seedCoordinates(selectedCourse.location.longitude, selectedCourse.location.latitude, aspect),
+    )
   }
 
   // Handle/marker drags return the 4 corners in [TL, TR, BR, BL] order.
@@ -131,19 +138,29 @@ const Step4AlignImagery: React.FC = () => {
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 300px', gap: 20, alignItems: 'start' }}>
-      <div style={{ borderRadius: 16, overflow: 'hidden', border: `1px solid ${colors.gray200}` }}>
-        <MapboxCanvas
-          center={mapCenter}
-          zoom={14}
-          height={620}
-          initialLoad
-          showSandboxLabel
-          mapStyle={basemap.style}
-          editableOverlay
-          onOverlayChange={handleOverlayChange}
-          overlayConfig={overlayConfig}
-          onMouseMove={(lngLat) => setCursor(lngLat)}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {isAutoAligned && (
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '11px 14px', background: colors.toroRedTint, borderRadius: 12, color: colors.ink }}>
+            <Icons.Sparkles size={17} style={{ color: colors.toroRed, flexShrink: 0 }} />
+            <div style={{ fontSize: 13, lineHeight: 1.45 }}>
+              <strong>Already aligned.</strong> This capture is georeferenced, so it's placed exactly over the course. Only adjust if you want to fine-tune. Use <strong>Reset placement</strong> to snap back.
+            </div>
+          </div>
+        )}
+        <div style={{ borderRadius: 16, overflow: 'hidden', border: `1px solid ${colors.gray200}` }}>
+          <MapboxCanvas
+            center={mapCenter}
+            zoom={14}
+            height={620}
+            initialLoad
+            showSandboxLabel
+            mapStyle={basemap.style}
+            editableOverlay
+            onOverlayChange={handleOverlayChange}
+            overlayConfig={overlayConfig}
+            onMouseMove={(lngLat) => setCursor(lngLat)}
         />
+        </div>
       </div>
 
       <div className="card" style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 18 }}>
