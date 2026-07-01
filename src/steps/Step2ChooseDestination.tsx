@@ -18,9 +18,11 @@ const STANDARD_TARGETS: Omit<MapboxDestination, 'fromAccount'>[] = [
   { styleId: 'mapbox/dark-v11', styleName: 'Dark', styleUrl: 'mapbox://styles/mapbox/dark-v11', owner: 'mapbox' },
 ]
 
-const styleThumb = (styleUrl: string, lng: number, lat: number) => {
+const LIST_TOKEN_KEY = 'strata-mapbox-list-token'
+
+const styleThumb = (styleUrl: string, lng: number, lat: number, token: string) => {
   const path = styleUrl.replace('mapbox://styles/', '')
-  return `https://api.mapbox.com/styles/v1/${path}/static/${lng},${lat},12.5,0/280x170@2x?access_token=${MAPBOX_TOKEN}&attribution=false&logo=false`
+  return `https://api.mapbox.com/styles/v1/${path}/static/${lng},${lat},12.5,0/280x170@2x?access_token=${token}&attribution=false&logo=false`
 }
 
 const Step2ChooseDestination: React.FC = () => {
@@ -33,16 +35,23 @@ const Step2ChooseDestination: React.FC = () => {
   const [accountStyles, setAccountStyles] = useState<MapboxDestination[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  // A user-supplied token with the styles:list scope, kept ONLY in this browser
+  // (localStorage) — never committed to the repo or the published site.
+  const [listToken, setListToken] = useState<string>(() => {
+    try { return localStorage.getItem(LIST_TOKEN_KEY) || '' } catch { return '' }
+  })
+  const [tokenInput, setTokenInput] = useState('')
+  const [showConnect, setShowConnect] = useState(false)
 
   const lng = selectedCourse?.location.longitude ?? -98.5
   const lat = selectedCourse?.location.latitude ?? 39.8
 
-  const loadStyles = async () => {
+  const loadStyles = async (token: string) => {
     setLoading(true)
     setError(null)
     try {
-      if (!MAPBOX_TOKEN) throw new Error('No Mapbox token configured.')
-      const styles = await fetchMapStyles(MAPBOX_TOKEN)
+      if (!token) throw new Error('No Mapbox token configured.')
+      const styles = await fetchMapStyles(token)
       const mapped: MapboxDestination[] = styles
         .filter((s) => s.url)
         .map((s) => ({
@@ -62,8 +71,29 @@ const Step2ChooseDestination: React.FC = () => {
   }
 
   useEffect(() => {
-    loadStyles()
+    // Only attempt a live fetch if the user has connected a token; the default
+    // public token lacks the styles:list scope and would just 403.
+    if (listToken) loadStyles(listToken)
+    else { setLoading(false); setAccountStyles([]) }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const connectToken = async () => {
+    const t = tokenInput.trim()
+    if (!t) return
+    try { localStorage.setItem(LIST_TOKEN_KEY, t) } catch {}
+    setListToken(t)
+    setTokenInput('')
+    setShowConnect(false)
+    await loadStyles(t)
+  }
+
+  const disconnectToken = () => {
+    try { localStorage.removeItem(LIST_TOKEN_KEY) } catch {}
+    setListToken('')
+    setAccountStyles([])
+    setError(null)
+    setShowConnect(false)
+  }
 
   const standardTargets: MapboxDestination[] = useMemo(
     () => STANDARD_TARGETS.map((t) => ({ ...t, fromAccount: false })),
@@ -104,7 +134,7 @@ const Step2ChooseDestination: React.FC = () => {
       >
         <div style={{ position: 'relative', height: 128, background: colors.gray100 }}>
           <img
-            src={styleThumb(t.styleUrl, lng, lat)}
+            src={styleThumb(t.styleUrl, lng, lat, t.fromAccount ? (listToken || MAPBOX_TOKEN) : MAPBOX_TOKEN)}
             alt={t.styleName}
             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
             onError={(e) => { (e.currentTarget.style.visibility = 'hidden') }}
@@ -149,17 +179,60 @@ const Step2ChooseDestination: React.FC = () => {
 
       {/* Account styles */}
       <div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, gap: 12 }}>
           <div>
             <div style={{ fontSize: 15, fontWeight: 700, color: colors.ink }}>Your Mapbox maps</div>
-            <div style={{ fontSize: 13, color: colors.gray500, marginTop: 2 }}>Styles pulled live from your Mapbox account.</div>
+            <div style={{ fontSize: 13, color: colors.gray500, marginTop: 2 }}>
+              {listToken ? 'Styles pulled live from your connected Mapbox account.' : 'Connect your account to publish onto your own styles.'}
+            </div>
           </div>
-          {!loading && (
-            <button onClick={loadStyles} style={{ fontSize: 13, fontWeight: 600, color: colors.toroRed, background: 'transparent', border: 'none', cursor: 'pointer', padding: '6px 8px', borderRadius: 8 }}>
-              Refresh
-            </button>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+            {listToken && (
+              <>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12.5, fontWeight: 600, color: colors.success, background: colors.successTint, padding: '4px 9px', borderRadius: 999 }}>
+                  <Icons.Check size={13} strokeWidth={3} /> Connected
+                </span>
+                {!loading && (
+                  <button onClick={() => loadStyles(listToken)} style={{ fontSize: 13, fontWeight: 600, color: colors.toroRed, background: 'transparent', border: 'none', cursor: 'pointer', padding: '6px 8px', borderRadius: 8 }}>Refresh</button>
+                )}
+                <button onClick={disconnectToken} style={{ fontSize: 13, fontWeight: 600, color: colors.gray500, background: 'transparent', border: 'none', cursor: 'pointer', padding: '6px 8px', borderRadius: 8 }}>Disconnect</button>
+              </>
+            )}
+            {!listToken && !showConnect && (
+              <button onClick={() => setShowConnect(true)} style={{ fontSize: 13, fontWeight: 700, color: '#fff', background: colors.toroRed, border: 'none', cursor: 'pointer', padding: '8px 14px', borderRadius: 999, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <Icons.Globe size={15} /> Connect account
+              </button>
+            )}
+          </div>
         </div>
+
+        {/* Connect token panel */}
+        {(showConnect || (error && listToken)) && (
+          <div style={{ padding: '16px 18px', background: colors.gray50, border: `1px solid ${colors.gray200}`, borderRadius: 14, marginBottom: 12 }}>
+            <div style={{ fontSize: 13.5, color: colors.ink, fontWeight: 600, marginBottom: 4 }}>Paste a Mapbox token with the <code style={{ fontFamily: 'var(--font-mono)' }}>styles:list</code> scope</div>
+            <div style={{ fontSize: 12.5, color: colors.gray500, lineHeight: 1.5, marginBottom: 12 }}>
+              Create one at <span style={{ fontFamily: 'var(--font-mono)', color: colors.gray700 }}>account.mapbox.com/access-tokens</span> with the <strong>styles:list</strong> scope enabled. It's stored only in this browser — never uploaded or committed.
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input
+                type="password"
+                value={tokenInput}
+                onChange={(e) => setTokenInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') connectToken() }}
+                placeholder="sk.eyJ1Ijoi…"
+                autoFocus
+                style={{ flex: 1, padding: '10px 12px', borderRadius: 10, border: `1.5px solid ${colors.gray200}`, fontSize: 13.5, fontFamily: 'var(--font-mono)', outline: 'none', color: colors.ink }}
+              />
+              <button onClick={connectToken} disabled={!tokenInput.trim()} style={{ fontSize: 13.5, fontWeight: 700, color: '#fff', background: tokenInput.trim() ? colors.toroRed : colors.gray300, border: 'none', cursor: tokenInput.trim() ? 'pointer' : 'default', padding: '10px 18px', borderRadius: 10 }}>Connect</button>
+              {!listToken && (
+                <button onClick={() => setShowConnect(false)} style={{ fontSize: 13.5, fontWeight: 600, color: colors.gray500, background: 'transparent', border: 'none', cursor: 'pointer', padding: '10px 12px' }}>Cancel</button>
+              )}
+            </div>
+            {error && listToken && (
+              <div style={{ fontSize: 12.5, color: colors.error, marginTop: 10 }}>Couldn't load styles: {error}</div>
+            )}
+          </div>
+        )}
 
         {loading ? (
           <div style={gridStyle}>
@@ -169,16 +242,16 @@ const Step2ChooseDestination: React.FC = () => {
           </div>
         ) : accountStyles.length > 0 ? (
           <div style={gridStyle}>{accountStyles.map(renderCard)}</div>
-        ) : (
+        ) : !showConnect && !(error && listToken) ? (
           <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '14px 16px', background: colors.gray50, border: `1px solid ${colors.gray200}`, borderRadius: 12 }}>
             <span style={{ color: colors.gray400, marginTop: 1 }}><Icons.Map size={18} /></span>
             <div style={{ fontSize: 13, color: colors.gray700, lineHeight: 1.5 }}>
-              {error
-                ? <>Couldn't load account styles ({error}). This usually means the access token lacks the <code style={{ fontFamily: 'var(--font-mono)' }}>styles:list</code> scope. You can still publish to a standard basemap below.</>
-                : <>No custom styles found on this account yet. Publish to a standard basemap below.</>}
+              {listToken
+                ? <>No custom styles found on this account yet. Publish to a standard basemap below.</>
+                : <>Not connected — publish to a standard basemap below, or <button onClick={() => setShowConnect(true)} style={{ background: 'transparent', border: 'none', padding: 0, color: colors.toroRed, fontWeight: 700, cursor: 'pointer', font: 'inherit' }}>connect your Mapbox account</button> to use your own styles.</>}
             </div>
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Standard basemaps */}
