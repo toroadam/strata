@@ -10,7 +10,7 @@ import type { LngLat } from '../store/overlayStore'
  * Each endpoint is CORS-enabled (`Access-Control-Allow-Origin: *`) so the renderer can
  * fetch the bytes directly and turn them into a data URL, matching the upload flow.
  */
-export type AerialSourceId = 'naip_plus' | 'naip' | 'usgs' | 'usgs_labels'
+export type AerialSourceId = 'naip_plus' | 'naip_plus_false' | 'naip_plus_ndvi' | 'naip' | 'usgs' | 'usgs_labels'
 
 export interface AerialSource {
   id: AerialSourceId
@@ -24,6 +24,12 @@ export interface AerialSource {
   /** ArcGIS ImageServer uses /exportImage; MapServer uses /export. */
   endpoint: string
   kind: 'ImageServer' | 'MapServer'
+  /**
+   * Optional ArcGIS raster function to apply at render time. This lets one source endpoint
+   * expose genuinely different visual products (e.g., true color vs false color) so users
+   * can choose what aligns best.
+   */
+  renderingFunction?: 'NaturalColor' | 'FalseColorComposite' | 'NDVI_Color'
 }
 
 export const AERIAL_SOURCES: AerialSource[] = [
@@ -35,6 +41,27 @@ export const AERIAL_SOURCES: AerialSource[] = [
     nativeMetersPerPixel: 0.3,
     endpoint: 'https://imagery.nationalmap.gov/arcgis/rest/services/USGSNAIPPlus/ImageServer/exportImage',
     kind: 'ImageServer',
+    renderingFunction: 'NaturalColor',
+  },
+  {
+    id: 'naip_plus_false',
+    label: 'USGS NAIP Plus · false color (NIR)',
+    description: 'Infrared false-color composite. Turf, trees, and moisture contrast pop more than true-color, useful for alignment on weak natural-color scenes.',
+    attribution: 'USGS NAIP Plus (FalseColorComposite) — public domain',
+    nativeMetersPerPixel: 0.3,
+    endpoint: 'https://imagery.nationalmap.gov/arcgis/rest/services/USGSNAIPPlus/ImageServer/exportImage',
+    kind: 'ImageServer',
+    renderingFunction: 'FalseColorComposite',
+  },
+  {
+    id: 'naip_plus_ndvi',
+    label: 'USGS NAIP Plus · NDVI color',
+    description: 'Vegetation index rendering from NIR bands. Not photorealistic, but can reveal turf/vegetation boundaries when true-color looks flat.',
+    attribution: 'USGS NAIP Plus (NDVI_Color) — public domain',
+    nativeMetersPerPixel: 0.3,
+    endpoint: 'https://imagery.nationalmap.gov/arcgis/rest/services/USGSNAIPPlus/ImageServer/exportImage',
+    kind: 'ImageServer',
+    renderingFunction: 'NDVI_Color',
   },
   {
     id: 'naip',
@@ -126,6 +153,9 @@ const buildUrl = (source: AerialSource, bbox: BBox, width: number, height: numbe
     transparent: 'false',
     f: 'image',
   })
+  if (source.renderingFunction) {
+    params.set('renderingRule', JSON.stringify({ rasterFunction: source.renderingFunction }))
+  }
   return `${source.endpoint}?${params.toString()}`
 }
 
@@ -135,7 +165,9 @@ const buildUrl = (source: AerialSource, bbox: BBox, width: number, height: numbe
  * string (URLSearchParams would percent-encode the braces).
  */
 export const tileTemplate = (source: AerialSource): string =>
-  `${source.endpoint}?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=256,256&format=png&transparent=false&f=image`
+  `${source.endpoint}?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=256,256&format=png&transparent=false&f=image${
+    source.renderingFunction ? `&renderingRule=${encodeURIComponent(JSON.stringify({ rasterFunction: source.renderingFunction }))}` : ''
+  }`
 
 export interface CaptureResult {
   dataUrl: string
