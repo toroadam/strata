@@ -10,7 +10,7 @@ import type { LngLat } from '../store/overlayStore'
  * Each endpoint is CORS-enabled (`Access-Control-Allow-Origin: *`) so the renderer can
  * fetch the bytes directly and turn them into a data URL, matching the upload flow.
  */
-export type AerialSourceId = 'naip' | 'usgs' | 'usgs_labels'
+export type AerialSourceId = 'naip_plus' | 'naip' | 'usgs' | 'usgs_labels'
 
 export interface AerialSource {
   id: AerialSourceId
@@ -28,11 +28,20 @@ export interface AerialSource {
 
 export const AERIAL_SOURCES: AerialSource[] = [
   {
+    id: 'naip_plus',
+    label: 'USGS NAIP Plus · best available',
+    description: 'Best quality. Blends NAIP + USGS High-Resolution Orthoimagery (HRO) where available (often sharper than base NAIP).',
+    attribution: 'USGS NAIP Plus (NAIP + HRO) — public domain',
+    nativeMetersPerPixel: 0.3,
+    endpoint: 'https://imagery.nationalmap.gov/arcgis/rest/services/USGSNAIPPlus/ImageServer/exportImage',
+    kind: 'ImageServer',
+  },
+  {
     id: 'naip',
-    label: 'USGS NAIP · 1m aerial',
-    description: 'Highest detail. Public-domain leaf-off/leaf-on orthoimagery from the USDA National Agriculture Imagery Program.',
+    label: 'USGS NAIP',
+    description: 'Consistent nationwide baseline NAIP imagery. Public-domain aerial orthoimagery from USDA/USGS.',
     attribution: 'USDA NAIP / USGS — public domain',
-    nativeMetersPerPixel: 1,
+    nativeMetersPerPixel: 0.3,
     endpoint: 'https://imagery.nationalmap.gov/arcgis/rest/services/USGSNAIPImagery/ImageServer/exportImage',
     kind: 'ImageServer',
   },

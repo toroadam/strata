@@ -30,7 +30,7 @@ const Step3UploadImagery: React.FC = () => {
 
   // Capture state
   const captureMapRef = useRef<mapboxgl.Map | null>(null)
-  const [sourceId, setSourceId] = useState<AerialSourceId>('naip')
+  const [sourceId, setSourceId] = useState<AerialSourceId>('naip_plus')
   const [detail, setDetail] = useState(DETAIL_LEVELS[1])
   const [capturing, setCapturing] = useState(false)
   const [viewBounds, setViewBounds] = useState<BBox | null>(null)
@@ -290,6 +290,9 @@ const Step3UploadImagery: React.FC = () => {
                     </button>
                   )
                 })}
+              </div>
+              <div style={{ marginTop: 8, fontSize: 11.5, color: colors.gray400, lineHeight: 1.45 }}>
+                Google Earth Pro imagery is intentionally excluded here because its license does not allow republishing screenshots in this product.
               </div>
             </div>
 
