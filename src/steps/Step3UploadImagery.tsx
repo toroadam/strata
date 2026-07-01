@@ -141,6 +141,18 @@ const Step3UploadImagery: React.FC = () => {
     return { spanKm, mpp: Math.max(mpp, native), upscaled: mpp < native }
   }, [viewBounds, detail, sourceId])
 
+  const openGoogleEarthCompare = useCallback(() => {
+    if (!viewBounds) return
+    const [w, s, e, n] = viewBounds
+    const lat = (s + n) / 2
+    const lng = (w + e) / 2
+    const widthM = Math.abs(e - w) * 111320 * Math.cos((lat * Math.PI) / 180)
+    const heightM = Math.abs(n - s) * 110540
+    const altitude = Math.max(120, Math.round(Math.max(widthM, heightM) * 1.25))
+    const url = `https://earth.google.com/web/@${lat.toFixed(6)},${lng.toFixed(6)},${altitude}a,0d,35y,0h,0t,0r`
+    window.open(url, '_blank', 'noopener,noreferrer')
+  }, [viewBounds])
+
   const MethodCard: React.FC<{ id: Method; icon: React.ReactNode; title: string; desc: string }> = ({ id, icon, title, desc }) => {
     const active = method === id
     return (
@@ -291,8 +303,19 @@ const Step3UploadImagery: React.FC = () => {
                   )
                 })}
               </div>
-              <div style={{ marginTop: 8, fontSize: 11.5, color: colors.gray400, lineHeight: 1.45 }}>
-                Google Earth Pro imagery is intentionally excluded here because its license does not allow republishing screenshots in this product.
+              <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={!viewBounds}
+                  onClick={openGoogleEarthCompare}
+                  iconLeft={<Icons.Globe size={15} />}
+                >
+                  Open Google Earth for comparison
+                </Button>
+                <div style={{ fontSize: 11.5, color: colors.gray400, lineHeight: 1.45 }}>
+                  External compare only. Google Earth imagery is not ingested or published by Strata.
+                </div>
               </div>
             </div>
 
